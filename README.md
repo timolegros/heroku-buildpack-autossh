@@ -1,5 +1,7 @@
 # Heroku buildpack for autossh
-This is a Heroku buildpack that adds autossh to your heroku build.
+This is a Heroku buildpack that adds autossh to your heroku build. This buildpack was forked from
+https://github.com/oddcamp/heroku-buildpack-autossh. Updates from the forked version include
+installing an updated version of autossh (1.4g rather than 1.4f) as well as improved error handling.
 
 autossh is a program to start a copy of ssh and monitor it, restarting
 it as necessary should it die or stop passing traffic.
@@ -9,7 +11,7 @@ http://www.harding.motd.ca/autossh/
 ## Usage
 
 ```
-$ heroku create --buildpack https://github.com/kollegorna/heroku-buildpack-autossh
+$ heroku create --buildpack https://github.com/timolegros/heroku-buildpack-autossh
 
 $ git push heroku master
 ...
@@ -17,7 +19,7 @@ $ git push heroku master
 -----> Fetching custom git buildpack... done
 -----> autossh app detected
 -----> Installing autossh
-       Downloading autossh version 1.4f...
+       Downloading autossh version 1.4g...
        Building autossh...
        Cleaning up...
        Installation successful!

@@ -7,12 +7,19 @@ set -o errexit    # always exit on error
 set -o pipefail   # don't ignore exit codes when piping output
 set -o nounset    # fail on unset variables
 
+### Ensure necessary tools are available
+
+command -v curl >/dev/null 2>&1 || { echo >&2 "curl is required but it is not installed.  Aborting."; exit 1; }
+command -v tar >/dev/null 2>&1 || { echo >&2 "tar is required but it is not installed.  Aborting."; exit 1; }
+command -v make >/dev/null 2>&1 || { echo >&2 "make is required but it is not installed.  Aborting."; exit 1; }
+
+
 ### Configure directories
 
 BUILD_DIR=${1:-}
 CACHE_DIR=${2:-}
-ENV_DIR=${3:-}
-BP_DIR=$(cd $(dirname ${0:-}); cd ..; pwd)
+BP_DIR=$(cd "$(dirname "${0:-}")"; cd ..; pwd)
+AUTOSHH_VERSION="1.4g"
 
 mkdir -p "$BUILD_DIR/.heroku/autossh"
 mkdir -p "$CACHE_DIR/autossh"
@@ -27,31 +34,33 @@ cp $BP_DIR/profile/* $BUILD_DIR/.profile.d/
 ### Installation
 
 download_autossh() {
-  echo "       Downloading autossh version 1.4f..."
-  download_url="https://www.harding.motd.ca/autossh/autossh-1.4f.tgz"
-  curl $download_url -s -o - | tar -xz -C $CACHE_DIR/autossh
+  echo "       Downloading autossh version $AUTOSHH_VERSION..."
+  cache_loc="$CACHE_DIR/autossh/autossh-$AUTOSHH_VERSION.tgz"
+  download_url="https://www.harding.motd.ca/autossh/autossh-$AUTOSHH_VERSION.tgz"
+  curl -L -o  $cache_loc $download_url
+  tar -xzf $cache_loc
 }
 
 build_autossh() {
   echo "       Building autossh..."
-  cd $CACHE_DIR/autossh/autossh-1.4f
+  cd $CACHE_DIR/autossh/autossh-$AUTOSHH_VERSION
   ./configure --quiet
   make --quiet
 }
 
 cleanup() {
   echo "       Cleaning up..."
-  find $CACHE_DIR/autossh/autossh-1.4f -type f  | grep -v "autossh$" | xargs rm
+  find $CACHE_DIR/autossh/autossh-$AUTOSHH_VERSION -type f  | grep -v "autossh$" | xargs -d '\n' rm
 }
 
 install_autossh() {
-  cp $CACHE_DIR/autossh/autossh-1.4f/autossh $BUILD_DIR/.heroku/autossh
+  cp $CACHE_DIR/autossh/autossh-$AUTOSHH_VERSION/autossh $BUILD_DIR/.heroku/autossh
   chmod +x $BUILD_DIR/.heroku/autossh/autossh
   echo "       Installation successful!"
 }
 
 echo "-----> Installing autossh"
-if [ ! -f $CACHE_DIR/autossh/autossh-1.4f/autossh ]; then
+if [ ! -f $CACHE_DIR/autossh/autossh-$AUTOSHH_VERSION/autossh ]; then
   download_autossh
   build_autossh
   cleanup
