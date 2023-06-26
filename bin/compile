@@ -35,10 +35,8 @@ cp $BP_DIR/profile/* $BUILD_DIR/.profile.d/
 
 download_autossh() {
   echo "       Downloading autossh version $AUTOSHH_VERSION..."
-  cache_loc="$CACHE_DIR/autossh/autossh-$AUTOSHH_VERSION.tgz"
   download_url="https://www.harding.motd.ca/autossh/autossh-$AUTOSHH_VERSION.tgz"
-  curl -L -o  $cache_loc $download_url
-  tar -xzf $cache_loc
+  curl $download_url -L -o - | tar -xz -C $CACHE_DIR/autossh
 }
 
 build_autossh() {
